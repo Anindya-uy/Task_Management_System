@@ -5,8 +5,9 @@ from src.user.userModels import UserModel
 from pwdlib import PasswordHash
 from src.utils.settings import settings
 from datetime import datetime,timedelta
-import jwt
 from jwt import InvalidTokenError
+from src.utils.mail import send_email
+import jwt
 
 password_hash = PasswordHash.recommended()
 
@@ -18,7 +19,7 @@ def verify_password(plain_password, hashed_password):
     return password_hash.verify(plain_password, hashed_password)
 
 
-def register(body:UserSchema, db:Session):
+async def register(body:UserSchema, db:Session):
     #print(body)
     
     # User Validations
@@ -43,7 +44,9 @@ def register(body:UserSchema, db:Session):
     db.commit()
     db.refresh(new_user)
 
-    
+    ## Send confirmation email
+    res = await send_email([new_user.email])
+    print(res)
     return new_user
 
 def login_user(body:LoginSchema, db:Session):
