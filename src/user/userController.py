@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status, Request
+from fastapi import HTTPException, status, Request, BackgroundTasks
 from src.user.userDtos import UserSchema, LoginSchema
 from sqlalchemy.orm import Session
 from src.user.userModels import UserModel
@@ -19,7 +19,7 @@ def verify_password(plain_password, hashed_password):
     return password_hash.verify(plain_password, hashed_password)
 
 
-async def register(body:UserSchema, db:Session):
+async def register(body:UserSchema, db:Session, bg_task:BackgroundTasks):
     #print(body)
     
     # User Validations
@@ -45,8 +45,12 @@ async def register(body:UserSchema, db:Session):
     db.refresh(new_user)
 
     ## Send confirmation email
-    res = await send_email([new_user.email])
-    print(res)
+    # res = await send_email([new_user.email])
+    # print(res)
+
+    # bg_task.add_task(send_email, [new_user])
+    #### To enable bg_task firstly need to configure email password in mail.py
+
     return new_user
 
 def login_user(body:LoginSchema, db:Session):
